@@ -5,7 +5,7 @@ import numpy as np
 import time
 
 #
-model = Model.Model(modelSaveName="../model.h5")
+model = Model.Model(modelSaveName="model.h5", input_size=(70, 70))
 model.loadding()
 
 objd = od.ObjectMiniDetection()
@@ -21,13 +21,37 @@ while cap.isOpened():
     frame = frame[650:1000, 400:900]
     frame = np.array(frame)
 
-    _, _, _, objs, bound = objd.process(frame, max_object=10)
+    _, _, _, objs, bound = objd.process(frame, max_object=20)
     if len(objs) > 0:
         predict = model.predict(objs)
-        # print("Predict: ", predict)
-    color = (0, 255, 0)
-    for b in bound:
-        cv2.rectangle(frame, b[0], b[1], color)
+        cls = np.argmax(predict, axis=1)
+        axm = np.amax(predict, axis=1)
+        # print("Cla: ", cls)
+        # print("Axm: ", axm)
+
+        for i in range(len(bound)):
+            if axm[i] > 0.9:
+                if cls[i] == 2:
+                    color = (0, 255, 0)
+                    label = "Green Light"
+                elif cls[i] == 1:
+                    color = (255, 0, 0)
+                    label = "Yellow Light"
+                else:
+                    label = "Red Light"
+                    color = (0, 0, 255)
+
+                cv2.rectangle(frame, bound[i][0], bound[i][1], color, 2)
+
+                labelSize = cv2.getTextSize(label, cv2.FONT_HERSHEY_COMPLEX, 0.5, 2)
+                _x1 = bound[i][0][0]
+                _y1 = bound[i][0][1]  # +int(labelSize[0][1]/2)
+                _x2 = _x1 + labelSize[0][0]
+                _y2 = bound[i][0][1] - int(labelSize[0][1])
+
+                cv2.rectangle(frame, bound[i][0], bound[i][1], color)
+                cv2.rectangle(frame, (_x1, _y1), (_x2, _y2), color, cv2.FILLED)
+                cv2.putText(frame, label, (bound[i][0][0], bound[i][0][1]), cv2.FONT_HERSHEY_COMPLEX, 0.5, (0, 0, 0), 1)
 
     end = time.time()
     fps = int(totalFrame / (end - start))
