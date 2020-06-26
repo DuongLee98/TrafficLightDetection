@@ -17,11 +17,11 @@ start = time.time()
 
 while cap.isOpened():
     totalFrame += 1
-    ret, frame = cap.read()
-    frame = frame[650:1000, 400:900]
+    ret, scap = cap.read()
+    frame = scap[650:1000, 400:900]
     frame = np.array(frame)
 
-    _, _, _, objs, bound = objd.process(frame, max_object=20)
+    _, _, _, objs, bound = objd.process(frame, kenel_size=(19, 19), threshold=100, max_object=20)
     if len(objs) > 0:
         predict = model.predict(objs)
         cls = np.argmax(predict, axis=1)
@@ -30,7 +30,7 @@ while cap.isOpened():
         # print("Axm: ", axm)
 
         for i in range(len(bound)):
-            if axm[i] > 0.9:
+            if axm[i] > 0.85:
                 if cls[i] == 2:
                     color = (0, 255, 0)
                     label = "Green Light"

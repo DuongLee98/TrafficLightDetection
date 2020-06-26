@@ -3,7 +3,7 @@ import numpy as np
 
 class ObjectMiniDetection:
     def __init__(self):
-        self.des = "Object Detection v.1 by DL"
+        self.des = "Object Detection v.1 by PhungHK"
         print(self.des)
 
     def process(self, frame, min_area=100, max_area=1500, max_object=100, threshold=100, kenel_size=(9, 9), max_size_distance=5):
@@ -50,26 +50,29 @@ class ObjectMiniDetection:
 if __name__ == "__main__":
     objd = ObjectMiniDetection()
 
-    # cap = cv2.VideoCapture('demo/video/VID_20200620_174445.mp4')
-    #
-    # while cap.isOpened():
-    #     fps = cap.get(cv2.CAP_PROP_FPS)
-    #     print("FPS: {0}".format(int(fps)))
-    #
-    #     ret, frame = cap.read()
-    #     frame = frame[650:1000, 400:900]
-    #     frame = np.array(frame)
-    #
-    #     _, _, _, _, bound = objd.process(frame, max_object=20)
-    #     color = (0, 255, 0)
-    #     for b in bound:
-    #         cv2.rectangle(frame, b[0], b[1], color)
-    #
-    #     cv2.imshow('frame', frame)
-    #
-    #
-    #     if cv2.waitKey(1) & 0xFF == ord('q'):
-    #         break
-    #
-    # cap.release()
-    # cv2.destroyAllWindows()
+    cap = cv2.VideoCapture('demo/video/VID_20200620_174445.mp4')
+
+    while cap.isOpened():
+        fps = cap.get(cv2.CAP_PROP_FPS)
+        # print("FPS: {0}".format(int(fps)))
+
+        ret, frame = cap.read()
+        frame = frame[650:1000, 400:900]
+        frame = np.array(frame)
+
+        toph, thresh, dtrf, objs, bound = objd.process(frame, kenel_size=(19, 19), threshold=110, max_object=20)
+        color = (0, 255, 0)
+        for b in bound:
+            cv2.rectangle(frame, b[0], b[1], color)
+
+        cv2.imshow('frame', frame)
+        cv2.imshow('tophat', toph)
+        cv2.imshow('thres', thresh)
+        cv2.imshow('distrf', dtrf)
+        print("Obj: ", len(objs))
+
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
+
+    cap.release()
+    cv2.destroyAllWindows()

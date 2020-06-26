@@ -94,11 +94,13 @@ class Model:
 
         # Train the network
         print("Training network...")
+        print(trainX.shape)
+        print(trainY.shape)
         history = model.fit(trainX, trainY, epochs=self.epochs, validation_data=(testX, testY))
 
         # Save the network to disk
         print("Saving model....")
-        model.save(self.modelSaveName)
+        # model.save(self.modelSaveName)
         print("Model saved!")
 
     def loadding(self):
