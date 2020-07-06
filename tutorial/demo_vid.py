@@ -4,7 +4,6 @@ import cv2
 import numpy as np
 import time
 
-#
 model = Model.Model(modelSaveName="model.h5", input_size=(70, 70))
 model.loadding()
 
@@ -14,23 +13,24 @@ cap = cv2.VideoCapture('../demo/video/VID_20200620_174445.mp4')
 print(cap.isOpened())
 totalFrame = 0
 start = time.time()
-
 while cap.isOpened():
     totalFrame += 1
     ret, scap = cap.read()
     frame = scap[650:1000, 400:900]
     frame = np.array(frame)
 
-    _, _, _, objs, bound = objd.process(frame, kenel_size=(19, 19), threshold=100, max_object=20)
+    _, _, _, objs, bound = objd.process(frame, kenel_size=(19, 19), threshold=100, max_object=10)
+
     if len(objs) > 0:
         predict = model.predict(objs)
-        cls = np.argmax(predict, axis=1)
-        axm = np.amax(predict, axis=1)
+        cls = np.argmax(predict, axis=1) #class
+        axm = np.amax(predict, axis=1) # % dự đoán
         # print("Cla: ", cls)
         # print("Axm: ", axm)
 
         for i in range(len(bound)):
-            if axm[i] > 0.85:
+            if axm[i] > 0.9:
+
                 if cls[i] == 2:
                     color = (0, 255, 0)
                     label = "Green Light"

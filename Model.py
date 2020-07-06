@@ -37,6 +37,7 @@ class Model:
     def pre_data(self, img):
         image = cv2.resize(img, self.input_size)
         image = np.array(image, dtype="float") / 255.0
+        # print(image)
         return image
 
     def training(self):
@@ -65,7 +66,7 @@ class Model:
         labels = np.array(labels)
         print(labels.shape)
 
-        (trainX, testX, trainY, testY) = train_test_split(data, labels, test_size=0.2, random_state=42)
+        (trainX, testX, trainY, testY) = train_test_split(data, labels, test_size=0.35, random_state=42)
 
         lb = LabelBinarizer()
         trainY = lb.fit_transform(trainY)
@@ -74,7 +75,7 @@ class Model:
 
         model = Sequential()
 
-        model.add(Conv2D(32, (7, 7), input_shape=(self.input_size[0], self.input_size[1], 3), padding="SAME", activation='relu'))
+        model.add(Conv2D(64, (7, 7), input_shape=(self.input_size[0], self.input_size[1], 3), padding="SAME", activation='relu'))
         model.add(MaxPooling2D(pool_size=(2, 2), padding="SAME"))
         model.add(Conv2D(64, (5, 5), padding="SAME", activation='relu'))
         model.add(MaxPooling2D(pool_size=(2, 2), padding="SAME"))
@@ -97,10 +98,10 @@ class Model:
         print(trainX.shape)
         print(trainY.shape)
         history = model.fit(trainX, trainY, epochs=self.epochs, validation_data=(testX, testY))
-
+        return history
         # Save the network to disk
         print("Saving model....")
-        # model.save(self.modelSaveName)
+        model.save(self.modelSaveName)
         print("Model saved!")
 
     def loadding(self):

@@ -8,10 +8,13 @@ class ObjectMiniDetection:
 
     def process(self, frame, min_area=100, max_area=1500, max_object=100, threshold=100, kenel_size=(9, 9), max_size_distance=5):
 
+        # Perform top-hat morphology to find the spotlights in the image
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         kernel = np.ones(kenel_size, np.uint8)
         tophat = cv2.morphologyEx(gray, cv2.MORPH_TOPHAT, kernel)
         ret, thresh = cv2.threshold(tophat, threshold, 255, cv2.THRESH_BINARY)
+
+        # Watershed region growing algorithm with the spotlights as the seeds
         dist_transform = cv2.distanceTransform(thresh, cv2.DIST_L2, max_size_distance)
         ret, markers = cv2.connectedComponents(np.uint8(dist_transform))
         watershed = cv2.watershed(frame, markers)
@@ -20,27 +23,28 @@ class ObjectMiniDetection:
         area = np.array([np.sum(markers == val) for val in range(1, ret + 1)])
         select = np.array((area > min_area) & (area < max_area))
         ft = np.array(id[select == True])
+        # check obj if so max (>100) => choose vung mid
         if ft.shape[0] > max_object:
             sli = int((ft.shape[0]-max_object)/2)
             ft = ft[sli:sli+max_object]
 
         outobj = []
         posobj = []
-        for sc in ft:
-            aw = watershed == sc
+        for sc in ft: # choose obj từ các obj tìm đc
+            aw = watershed ==  sc # các điểm ảnh = nhau = sc thì = True
             pos = np.argwhere(aw == True)
 
             ps1, ps2 = self.bounding_box(pos)
 
             # color = (0, 255, 0)
-            w = ps2[0] - ps1[0] + 1
-            h = ps2[1] - ps1[1] + 1
-            crop = frame[ps1[1]:ps1[1] + h, ps1[0]:ps1[0] + w]
+            # w = ps2[0] - ps1[0] + 1
+            # h = ps2[1] - ps1[1] + 1
+            crop = frame[ps1[1]:ps2[1] + 1, ps1[0]:ps2[0] + 1]
             outobj.append(crop)
             posobj.append((ps1, ps2))
 
         return tophat, thresh, dist_transform, outobj, posobj
-
+# xác định khung của obj
     def bounding_box(self, points):
         x_coordinates, y_coordinates = zip(*points)
         return (min(y_coordinates), min(x_coordinates)), (max(y_coordinates), max(x_coordinates))
